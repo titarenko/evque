@@ -1,0 +1,45 @@
+{
+  "name": "evque",
+  "version": "0.0.1",
+  "description": "Event bus implemented using amqp exchanges (~events) and queues (~listeners)",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "dependencies": {
+    "amqplib": "^0.4.0",
+    "bluebird": "^3.0.6",
+    "lodash": "^3.10.1",
+    "memoizee": "^0.3.9"
+  },
+  "devDependencies": {
+    "coveralls": "^2.11.4",
+    "istanbul": "^0.4.1",
+    "mocha": "^2.3.4",
+    "should": "^8.0.0"
+  },
+  "scripts": {
+    "test": "node node_modules/istanbul/lib/cli cover node_modules/mocha/bin/_mocha -- tests && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/titarenko/evque.git"
+  },
+  "keywords": [
+    "event",
+    "bus",
+    "amqp",
+    "rabbitmq",
+    "exchange",
+    "fanout",
+    "queue",
+    "publish",
+    "subscribe"
+  ],
+  "author": "Constantin Titarenko",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/titarenko/evque/issues"
+  },
+  "homepage": "https://github.com/titarenko/evque#readme"
+}
