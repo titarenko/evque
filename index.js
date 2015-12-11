@@ -16,8 +16,8 @@ function build (options) {
 		emitter: emitter
 	};
 
-	var getPublisher = memoizee(_.partial(createPublisher, config));
-	var getSubscriber = memoizee(_.partial(createSubscriber, config));
+	var getPublisher = memoizee(_.partial(createPublisher, config), { length: false });
+	var getSubscriber = memoizee(_.partial(createSubscriber, config), { length: false });
 
 	var api = _.extend(emitter, {
 		publish: publishEvent,
