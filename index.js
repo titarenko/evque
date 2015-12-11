@@ -2,8 +2,8 @@
 
 var EventEmitter = require('events').EventEmitter;
 var _ = require('lodash');
-var amqplib = require('amqplib');
 var Promise = require('bluebird');
+var amqplib = require('amqplib');
 var memoizee = require('memoizee');
 
 module.exports = build;
@@ -19,14 +19,15 @@ function build (options) {
 	var getPublisher = memoizee(_.partial(createPublisher, config));
 	var getSubscriber = memoizee(_.partial(createSubscriber, config));
 
-	return _.merge(emitter, {
+	var api = _.extend(emitter, {
 		publish: publishEvent,
-		subscribe: listenForEvent,
-		on: emitter.on
+		subscribe: listenForEvent
 	});
 
+	return api;
+
 	function publishEvent (eventName, eventData, context) {
-		var ev = { context: this || context, data: eventData };
+		var ev = { context: api === this ? context : context || this, data: eventData };
 		return getPublisher(eventName).then(function (publisher) {
 			return publisher(ev);
 		});
@@ -65,22 +66,23 @@ function createSubscriber (config, eventName, listenerName) {
 		});
 	}).then(function (channel) {
 		return function subscribe (handler) {
-			return channel.consume(queueName, _.partial(onMessage, channel, config.emitter, exchangeName, listenerName, handler));
+			return channel.consume(queueName, onMessage);
+			function onMessage (message) {
+				var content = JSON.parse(message.content.toString());
+				return Promise.resolve().then(function () {
+					return handler.call(content.context, content.data);
+				}).catch(function (error) {
+					config.emitter.emit('error', {
+						'event': exchangeName,
+						listener: listenerName,
+						data: message,
+						error: error
+					});
+				}).finally(function () {
+					return channel.ack(message);
+				});
+			}
 		};
-	});
-}
-
-function onMessage (channel, emitter, exchangeName, listenerName, handler, message) {
-	var content = JSON.parse(message.content.toString());
-	return Promise.resolve(handler.call(content.context, content.data)).catch(function (error) {
-		emitter.emit('error', {
-			'event': exchangeName,
-			listener: listenerName,
-			data: message,
-			error: error
-		});
-	}).finally(function () {
-		return channel.ack(message);
 	});
 }
 

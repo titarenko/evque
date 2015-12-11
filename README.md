@@ -1,6 +1,14 @@
 # evque
 
-Event bus implemented using amqp exchanges (events) and queues (listeners).
+AMQP-based event bus.
+
+[![Build Status](https://secure.travis-ci.org/titarenko/evque.png?branch=master)](https://travis-ci.org/titarenko/evque) [![Coverage Status](https://coveralls.io/repos/titarenko/evque/badge.png)](https://coveralls.io/r/titarenko/evque)
+
+## Installation
+
+```bash
+npm i evque --save
+```
 
 ## Description
 
@@ -12,6 +20,7 @@ Each `subscriber` = `queue` bound to `exchange`, named after event and subscribe
 
 ## Motivation
 
+- simple project bootstrap
 - events are preserved across broker restarts
 - events will wait for their listeners (will not disappear if listener is offline)
 
@@ -38,6 +47,6 @@ bus.subscribe('event1', 'listener2', function (data) {
 bus.publish('event1', { a: 'b' });
 ```
 
-# License
+## License
 
 MIT

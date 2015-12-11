@@ -1,7 +1,7 @@
 {
   "name": "evque",
-  "version": "0.0.1",
-  "description": "Event bus implemented using amqp exchanges (~events) and queues (~listeners)",
+  "version": "0.0.2",
+  "description": "AMQP-based event bus",
   "main": "index.js",
   "directories": {
     "test": "tests"
