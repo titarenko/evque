@@ -75,7 +75,8 @@ function createSubscriber (config, eventName, listenerName) {
 					config.emitter.emit('error', {
 						'event': exchangeName,
 						listener: listenerName,
-						data: message,
+						data: content.data,
+						context: content.context,
 						error: error
 					});
 				}).finally(function () {
