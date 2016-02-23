@@ -13,6 +13,7 @@ function build (options) {
 
 	var config = {
 		url: options && options.url || options,
+		prefetch: options.prefetch || null,
 		emitter: emitter
 	};
 
@@ -56,6 +57,9 @@ function createSubscriber (config, eventName, listenerName) {
 	var exchangeName = eventName;
 	var queueName = [eventName, listenerName].join('-');
 	return getChannel(config.url).then(function (channel) {
+		if (config.prefetch && config.prefetch > 0) {
+			channel.prefetch(config.prefetch);
+		}
 		return Promise.all([
 			channel.assertExchange(exchangeName, 'fanout', { durable: true }),
 			channel.assertQueue(queueName, { durable: true })
