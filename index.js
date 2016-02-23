@@ -33,8 +33,8 @@ function build (options) {
 		});
 	}
 
-	function listenForEvent (eventName, listenerName, eventHandler) {
-		return getSubscriber(eventName, listenerName).then(function (subscriber) {
+	function listenForEvent (eventName, listenerName, eventHandler, prefetchCount) {
+		return getSubscriber(eventName, listenerName, prefetchCount).then(function (subscriber) {
 			return subscriber(eventHandler);
 		});
 	}
@@ -52,10 +52,10 @@ function createPublisher (config, exchangeName) {
 	});
 }
 
-function createSubscriber (config, eventName, listenerName) {
+function createSubscriber (config, eventName, listenerName, prefetchCount) {
 	var exchangeName = eventName;
 	var queueName = [eventName, listenerName].join('-');
-	return getChannel(config.url).then(function (channel) {
+	return getChannel(config.url, prefetchCount).then(function (channel) {
 		return Promise.all([
 			channel.assertExchange(exchangeName, 'fanout', { durable: true }),
 			channel.assertQueue(queueName, { durable: true })
@@ -89,8 +89,13 @@ function createSubscriber (config, eventName, listenerName) {
 
 var getChannel = memoizee(createChannel);
 
-function createChannel (url) {
+function createChannel (url, prefetchCount) {
 	return amqplib.connect(url).then(function (connection) {
 		return connection.createChannel();
+	}).then(function (channel) {
+		if (prefetchCount) {
+			channel.prefetch(prefetchCount);
+		}
+		return channel;
 	});
 }
