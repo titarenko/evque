@@ -9,8 +9,9 @@ describe('evque', function () {
 		bus.subscribe('my-event', 'subscriber', function (ev) {
 			ev.abba.should.eql('boney m');
 			done();
-		}).catch(done);
-		bus.publish('my-event', { abba: 'boney m' }).catch(done);
+		}).catch(done).then(function () {
+			bus.publish('my-event', { abba: 'boney m' }).catch(done);
+		});
 	});
 
 	it('should work with specified prefetch', function (done) {
