@@ -22,7 +22,8 @@ function build (options) {
 
 	var api = _.extend(emitter, {
 		publish: publishEvent,
-		subscribe: listenForEvent
+		subscribe: listenForEvent,
+		close: close
 	});
 
 	return api;
@@ -37,6 +38,12 @@ function build (options) {
 	function listenForEvent (eventName, listenerName, eventHandler, prefetchCount) {
 		return getSubscriber(eventName, listenerName, prefetchCount).then(function (subscriber) {
 			return subscriber(eventHandler);
+		});
+	}
+
+	function close () {
+		return getChannel(config.url).then(function (channel) {
+			return channel.connection.close();
 		});
 	}
 }
