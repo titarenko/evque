@@ -31,9 +31,13 @@ var bus = require('evque')('amqp://localhost');
 
 bus.on('error', function (ev) {
 	console.log(
-		'listener %s failed to handle event %s (%j) due to %s', 
+		'listener %s failed to handle event %s (%j) due to %s',
 		ev.listener, ev['event'], ev.data, ev.error.stack
 	);
+});
+
+bus.on('connection-error', function () {
+	console.log('connection closed by RabbitMQ. Restart your app?');
 });
 
 bus.subscribe('event1', 'listener1', function (data) {
