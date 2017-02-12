@@ -42,14 +42,14 @@ function build (options) {
 	}
 
 	function close () {
-		return getChannel(config.url).then(function (channel) {
+		return getChannel(config).then(function (channel) {
 			return channel.connection.close();
 		});
 	}
 }
 
 function createPublisher (config, exchangeName) {
-	return getChannel(config.url).then(function (channel) {
+	return getChannel(config).then(function (channel) {
 		return channel.assertExchange(exchangeName, 'fanout', { durable: true }).then(function () {
 			return channel;
 		});
@@ -63,7 +63,7 @@ function createPublisher (config, exchangeName) {
 function createSubscriber (config, eventName, listenerName, prefetchCount) {
 	var exchangeName = eventName;
 	var queueName = [eventName, listenerName].join('-');
-	return getChannel(config.url, prefetchCount || config.prefetch).then(function (channel) {
+	return getChannel(config, prefetchCount || config.prefetch).then(function (channel) {
 		return Promise.all([
 			channel.assertExchange(exchangeName, 'fanout', { durable: true }),
 			channel.assertQueue(queueName, { durable: true })
@@ -76,6 +76,10 @@ function createSubscriber (config, eventName, listenerName, prefetchCount) {
 		return function subscribe (handler) {
 			return channel.consume(queueName, onMessage);
 			function onMessage (message) {
+				if (message === null) { // queue closed/deleted event
+					config.emitter.emit('connection-error');
+					return;
+				}
 				var content = JSON.parse(message.content.toString());
 				return Promise.resolve().then(function () {
 					return handler.call(content.context, content.data);
@@ -97,12 +101,15 @@ function createSubscriber (config, eventName, listenerName, prefetchCount) {
 
 var getChannel = memoizee(createChannel);
 
-function createChannel (url, prefetchCount) {
-	return amqplib.connect(url).then(function (connection) {
+function createChannel (config, prefetchCount) {
+	return amqplib.connect(config.url).then(function (connection) {
 		return connection.createChannel();
 	}).then(function (channel) {
+		channel.on('close', function (ev) {
+				config.emitter.emit('connection-error', ev);
+		});
 		if (prefetchCount > 0) {
-			channel.prefetch(prefetchCount);
+			return channel.prefetch(prefetchCount).then(function () { return channel; });
 		}
 		return channel;
 	});
