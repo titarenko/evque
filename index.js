@@ -35,8 +35,8 @@ function build (options) {
 		});
 	}
 
-	function listenForEvent (eventName, listenerName, eventHandler, prefetchCount) {
-		return getSubscriber(eventName, listenerName, prefetchCount).then(function (subscriber) {
+	function listenForEvent (eventName, listenerName, eventHandler, prefetchCount, queueOptions) {
+		return getSubscriber(eventName, listenerName, prefetchCount, queueOptions).then(function (subscriber) {
 			return subscriber(eventHandler);
 		});
 	}
@@ -60,13 +60,13 @@ function createPublisher (config, exchangeName) {
 	});
 }
 
-function createSubscriber (config, eventName, listenerName, prefetchCount) {
+function createSubscriber (config, eventName, listenerName, prefetchCount, queueOptions) {
 	var exchangeName = eventName;
 	var queueName = [eventName, listenerName].join('-');
 	return getChannel(config, prefetchCount || config.prefetch).then(function (channel) {
 		return Promise.all([
 			channel.assertExchange(exchangeName, 'fanout', { durable: true }),
-			channel.assertQueue(queueName, { durable: true })
+			channel.assertQueue(queueName, queueOptions || { durable: true })
 		]).then(function () {
 			return channel.bindQueue(queueName, exchangeName, '*');
 		}).then(function () {
