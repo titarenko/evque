@@ -1,6 +1,6 @@
 {
   "name": "evque",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "AMQP-based event bus",
   "main": "index.js",
   "directories": {
